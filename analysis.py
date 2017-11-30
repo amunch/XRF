@@ -53,6 +53,20 @@ def find_regression(lengths, gaussian_means, gaussian_stds):
 
     return((wls_fit.params['y'], wls_fit.params['Intercept']),(wls_fit.bse['y'], wls_fit.bse['Intercept']), wls_fit, ws)
 
+def find_regression_inverse(x, y, yerr):
+    weights = 1/np.power(yerr, 2)
+
+    # put x and y into a pandas DataFrame, and the weights into a Series
+    ws = pd.DataFrame({
+        'x': x,
+        'y': y,
+        'yerr': map(lambda x: x*1, yerr)
+    })
+
+    wls_fit = sm.wls('x ~ y', data=ws, weights=1 / weights).fit()
+
+    return((wls_fit.params['y'], wls_fit.params['Intercept']),(wls_fit.bse['y'], wls_fit.bse['Intercept']), wls_fit, ws)
+
 def m_S(lengths, gaussian_means, gaussian_stds):
     params = find_regression(lengths, gaussian_means, gaussian_stds)
     percent_error = params[1][0] / params[0][0]
